@@ -71,6 +71,12 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+CAN_RxHeaderTypeDef rxHeader; //CAN Bus Transmit Header
+CAN_TxHeaderTypeDef txHeader; //CAN Bus Receive Header
+uint8_t canRX[8] = {0,0,0,0,0,0,0,0};  //CAN Bus Receive Buffer
+CAN_FilterTypeDef canfil; //CAN Bus Filter
+uint32_t canMailbox; //CAN Bus Mail box variable
+
 /* USER CODE END 0 */
 
 /**
@@ -111,6 +117,28 @@ int main(void)
 
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
 
+  canfil.FilterBank = 0;
+  canfil.FilterMode = CAN_FILTERMODE_IDMASK;
+  canfil.FilterFIFOAssignment = CAN_RX_FIFO0;
+  canfil.FilterIdHigh = 0;
+  canfil.FilterIdLow = 0;
+  canfil.FilterMaskIdHigh = 0;
+  canfil.FilterMaskIdLow = 0;
+  canfil.FilterScale = CAN_FILTERSCALE_32BIT;
+  canfil.FilterActivation = ENABLE;
+  canfil.SlaveStartFilterBank = 14;
+
+  txHeader.DLC = 8; // Number of bites to be transmitted max- 8
+  txHeader.IDE = CAN_ID_STD;
+  txHeader.RTR = CAN_RTR_DATA;
+  txHeader.StdId = 0x030;
+  txHeader.ExtId = 0x02;
+  txHeader.TransmitGlobalTime = DISABLE;
+
+  HAL_CAN_ConfigFilter(&hcan1,&canfil); //Initialize CAN Filter
+  HAL_CAN_Start(&hcan1); //Initialize CAN Bus
+  HAL_CAN_ActivateNotification(&hcan1,CAN_IT_RX_FIFO0_MSG_PENDING);// Initialize CAN Bus Rx Interrupt
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -126,6 +154,9 @@ int main(void)
     static unsigned int cnt = 0;
     static float fcnt = 0.0;
     printf("Hello from STM32CubeIDE %u\t%f\n\r", cnt++, fcnt++);
+    uint8_t csend[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; // Tx Buffer
+    HAL_StatusTypeDef cout = HAL_CAN_AddTxMessage(&hcan1,&txHeader,csend,&canMailbox); // Send Message
+    printf("HAL_CAN_AddTxMessage return value: %u\n\r", cout);
   }
   /* USER CODE END 3 */
 }
@@ -191,11 +222,11 @@ static void MX_CAN1_Init(void)
 
   /* USER CODE END CAN1_Init 1 */
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 16;
+  hcan1.Init.Prescaler = 17;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
   hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan1.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_6TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_3TQ;
   hcan1.Init.TimeTriggeredMode = DISABLE;
   hcan1.Init.AutoBusOff = DISABLE;
   hcan1.Init.AutoWakeUp = DISABLE;
@@ -456,6 +487,13 @@ PUTCHAR_PROTOTYPE
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
 
   return ch;
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan1)
+{
+	HAL_CAN_GetRxMessage(hcan1, CAN_RX_FIFO0, &rxHeader, canRX); //Receive CAN bus message to canRX buffer
+	HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
+
 }
 /* USER CODE END 4 */
 

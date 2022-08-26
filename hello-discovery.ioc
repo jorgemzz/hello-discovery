@@ -1,8 +1,11 @@
 #MicroXplorer Configuration settings - do not modify
-CAN1.CalculateBaudRate=875000
-CAN1.CalculateTimeBit=1142
-CAN1.CalculateTimeQuantum=380.95238095238096
-CAN1.IPParameters=CalculateTimeQuantum,CalculateTimeBit,CalculateBaudRate
+CAN1.BS1=CAN_BS1_6TQ
+CAN1.BS2=CAN_BS2_3TQ
+CAN1.CalculateBaudRate=247058
+CAN1.CalculateTimeBit=4047
+CAN1.CalculateTimeQuantum=404.76190476190476
+CAN1.IPParameters=CalculateTimeQuantum,CalculateTimeBit,CalculateBaudRate,Prescaler,BS1,BS2
+CAN1.Prescaler=17
 File.Version=6
 I2S3.AudioFreq-Half_Duplex_Master=I2S_AUDIOFREQ_96K
 I2S3.ErrorAudioFreq=-2.34 %
@@ -75,6 +78,7 @@ Mcu.UserName=STM32F407VGTx
 MxCube.Version=6.6.1
 MxDb.Version=DB.6.0.60
 NVIC.BusFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false
+NVIC.CAN1_RX0_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
 NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false
 NVIC.ForceEnableDMAVector=true
 NVIC.HardFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false

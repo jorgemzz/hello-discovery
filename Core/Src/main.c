@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,6 +105,8 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -117,6 +119,9 @@ int main(void)
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(LD6_GPIO_Port, LD6_Pin);
     HAL_Delay(100);
+    static unsigned int cnt = 0;
+    static float fcnt = 0.0;
+    printf("Hello from STM32CubeIDE %u\t%f\n\r", cnt++, fcnt++);
   }
   /* USER CODE END 3 */
 }
@@ -398,7 +403,19 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+  * @brief  Retargets the C library printf function to the USART.
+  * @param  None
+  * @retval None
+  */
+PUTCHAR_PROTOTYPE
+{
+  /* Place your implementation of fputc here */
+  /* e.g. write a character to the USART1 and Loop until the end of transmission */
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
 
+  return ch;
+}
 /* USER CODE END 4 */
 
 /**

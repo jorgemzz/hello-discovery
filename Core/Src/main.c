@@ -146,6 +146,11 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	static const uint8_t MPU6500_ADDR = 0x68 << 1; // Use 8-bit address
+	HAL_StatusTypeDef ret;
+	uint8_t buf[16];
+	uint8_t who_am_i_addr[1] = {0x75};
+
   while (1)
   {
     /* USER CODE END WHILE */
@@ -154,12 +159,22 @@ int main(void)
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(LD6_GPIO_Port, LD6_Pin);
     HAL_Delay(100);
-    static unsigned int cnt = 0;
-    static float fcnt = 0.0;
-    printf("Hello from STM32CubeIDE %u\t%f\n\r", cnt++, fcnt++);
+    printf("Hello from STM32CubeIDE TICK: %lu\n\r", HAL_GetTick());
     uint8_t csend[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08}; // Tx Buffer
     HAL_StatusTypeDef cout = HAL_CAN_AddTxMessage(&hcan1,&txHeader,csend,&canMailbox); // Send Message
     printf("HAL_CAN_AddTxMessage return value: %u\n\r", cout);
+
+    /* First we send the memory location address where start reading data */
+    ret = HAL_I2C_Master_Transmit(&hi2c3, MPU6500_ADDR, who_am_i_addr, 1, HAL_MAX_DELAY);
+    if(ret != HAL_OK){
+    	printf("I2C Transmit failed\n\r");
+    }
+    /* Next we can retrieve the data from EEPROM */
+    ret = HAL_I2C_Master_Receive(&hi2c3, MPU6500_ADDR, buf, 1, HAL_MAX_DELAY);
+    if(ret != HAL_OK){
+    	printf("I2C Receive failed\n\r");
+	}
+    printf("I2c Receive value: %u\n\r", buf[0]);
   }
   /* USER CODE END 3 */
 }
